@@ -10,6 +10,12 @@ import express from 'express'
 
 import { initProxy, ValidationError } from '../src/init-server'
 
+// Debug logging
+console.error('📌 [start-server.ts] Notion MCP Server starting…')
+console.error('📌 [start-server.ts] Process argv:', process.argv)
+console.error('📌 [start-server.ts] Environment NOTION_TOKEN:', process.env.NOTION_TOKEN ? 'SET (length=' + process.env.NOTION_TOKEN.length + ')' : 'NOT SET')
+console.error('📌 [start-server.ts] Environment OPENAPI_MCP_HEADERS:', process.env.OPENAPI_MCP_HEADERS ? 'SET' : 'NOT SET')
+
 export async function startServer(args: string[] = process.argv) {
   const filename = fileURLToPath(import.meta.url)
   const directory = path.dirname(filename)
@@ -73,10 +79,15 @@ Examples:
   const options = parseArgs()
   const transport = options.transport
 
+  console.error('📌 [start-server.ts] Transport selected:', transport)
+
   if (transport === 'stdio') {
     // Use stdio transport (default)
+    console.error('📌 [start-server.ts] Initializing stdio transport...')
     const proxy = await initProxy(specPath, baseUrl)
+    console.error('📌 [start-server.ts] Proxy initialized, connecting to StdioServerTransport...')
     await proxy.connect(new StdioServerTransport())
+    console.error('📌 [start-server.ts] Server connected successfully, returning server instance')
     return proxy.getServer()
   } else if (transport === 'http') {
     // Use Streamable HTTP transport

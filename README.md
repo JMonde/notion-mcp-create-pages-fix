@@ -71,6 +71,165 @@ This fork includes critical fixes for creating pages and improved MCP client com
 
 ---
 
+## 🖥️ Local Deployment
+
+### Running the Notion MCP Server Locally
+
+To use the Notion MCP server with your AI agents, you need to build and configure it locally.
+
+#### Step 1: Clone and Build the Project
+
+```bash
+npm install
+npm run build
+```
+
+#### Step 2: Configure Your MCP Client
+
+Add the following configuration to your MCP client configuration file:
+
+###### Claude Desktop (`claude_desktop_config.json`)
+
+Location: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows)
+
+```json
+{
+  "mcpServers": {
+    "notion": {
+      "command": "node",
+      "args": [
+        "bin/cli.mjs"
+      ],
+      "cwd": "C:\\Dev\\Open Source Projects\\notion-mcp-server",
+      "env": {
+        "NOTION_TOKEN": "ntn_XXX",
+        "OPENAPI_MCP_HEADERS": "{\"Authorization\": \"Bearer ntn_XXX\", \"Notion-Version\": \"2025-09-03\"}"
+      }
+    }
+  }
+}
+```
+
+###### Cursor (`.cursor/mcp.json`)
+
+```json
+{
+  "mcpServers": {
+    "notion": {
+      "command": "node",
+      "args": [
+        "bin/cli.mjs"
+      ],
+      "cwd": "C:\\Dev\\Open Source Projects\\notion-mcp-server",
+      "env": {
+        "NOTION_TOKEN": "ntn_XXX",
+        "OPENAPI_MCP_HEADERS": "{\"Authorization\": \"Bearer ntn_XXX\", \"Notion-Version\": \"2025-09-03\"}"
+      }
+    }
+  }
+}
+```
+
+> **Note:** Replace `C:\\Dev\\Open Source Projects\\notion-mcp-server` with your actual path to the repository. On macOS/Linux, use forward slashes: `/Users/username/path/to/notion-mcp-server`.
+
+> **Important:** Replace `ntn_XXX` with your actual Notion integration token (how to obtain it is below).
+
+---
+
+## 🤖 AI Agent Examples
+
+### Claude Code
+
+Claude Code can interact with the Notion MCP server to manage your workspace:
+
+```bash
+# Ask Claude to create a new page
+claude "Create a new page called 'Meeting Notes' in my 'Work' database with today's date"
+
+# Query database content
+claude "Show me all tasks in my 'Projects' database that are marked as 'In Progress'"
+
+# Add comments to pages
+claude "Add a comment to the 'Q1 Planning' page saying 'Review completed'"
+```
+
+### OpenCode
+
+OpenCode agents can leverage Notion MCP for workspace automation:
+
+```bash
+# Create documentation
+opencode "Create a new page in the 'Documentation' database called 'API Guidelines' with sections for Authentication, Rate Limiting, and Best Practices"
+
+# Update existing content
+opencode "Find the page 'Sprint Planning' and add a new section summarizing the key decisions from our last meeting"
+```
+
+### Cursor
+
+Cursor IDE with Notion MCP integration:
+
+```
+# In Cursor chat:
+"Query my 'Tasks' database and show me all items assigned to me that are due this week"
+
+"Create a new page under 'Projects' called 'Feature X Launch' with a checklist of launch activities"
+
+"Update the 'Status' property of page 'Backend Migration' to 'Completed'"
+```
+
+### GitHub Copilot
+
+GitHub Copilot CLI with Notion MCP:
+
+```bash
+# Using copilot CLI
+/mcp notion "List all pages in my 'Knowledge Base' database tagged with 'MCP'"
+
+# Create meeting notes
+/mcp notion "Create a page called 'Team Sync 2024-03-23' in the 'Meetings' database with attendees: Alice, Bob, Charlie"
+```
+
+### Generic MCP Client
+
+Any MCP-compatible client can use these tools:
+
+```
+# Available tools after connection:
+- search: Search Notion pages and data sources
+- post-page: Create new pages
+- retrieve-a-page: Get page content
+- patch-page: Update page properties
+- query-data-source: Query databases with filters
+- create-a-data-source: Create new databases
+- append-block-children: Add content to pages
+- create-a-comment: Add comments to pages
+- And 14 more tools...
+```
+
+### Example Workflow
+
+Here's a complete workflow example for project management:
+
+```
+1. Create a new project page:
+   "Create a page called 'Q2 Marketing Campaign' in the 'Projects' database"
+
+2. Add tasks to the project:
+   "Add the following tasks to my 'Tasks' database:
+    - Design campaign visuals (Due: April 1, Priority: High)
+    - Write copy for social media (Due: April 5, Priority: Medium)
+    - Schedule posts (Due: April 10, Priority: Low)"
+
+3. Create a meeting notes page linked to the project:
+   "Create a page called 'Q2 Campaign Kickoff Notes' under the 'Q2 Marketing Campaign' page"
+
+4. Add initial content:
+   "Append content to the meeting notes with: Attendees, Key Decisions, and Action Items sections"
+```
+
+---
+
 ## ⚠️ Version 2.0.0 breaking changes
 
 **Version 2.0.0 migrates to the Notion API 2025-09-03** which introduces data sources as the primary abstraction for databases.

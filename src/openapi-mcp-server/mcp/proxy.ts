@@ -91,11 +91,13 @@ export class MCPProxy {
   private openApiLookup: Record<string, OpenAPIV3.OperationObject & { method: string; path: string }>
 
   constructor(name: string, openApiSpec: OpenAPIV3.Document) {
+    console.error('📌 [MCPProxy] Constructor called with name:', name)
     this.server = new Server({ name, version: '1.0.0' }, { capabilities: { tools: {} } })
     const baseUrl = openApiSpec.servers?.[0].url
     if (!baseUrl) {
       throw new Error('No base URL found in OpenAPI spec')
     }
+    console.error('📌 [MCPProxy] Base URL:', baseUrl)
     this.httpClient = new HttpClient(
       {
         baseUrl,
@@ -103,19 +105,25 @@ export class MCPProxy {
       },
       openApiSpec,
     )
+    console.error('📌 [MCPProxy] HttpClient created')
 
     // Convert OpenAPI spec to MCP tools
     const converter = new OpenAPIToMCPConverter(openApiSpec)
     const { tools, openApiLookup } = converter.convertToMCPTools()
     this.tools = tools
     this.openApiLookup = openApiLookup
+    console.error('📌 [MCPProxy] Tools converted, count:', Object.keys(tools).length)
 
     this.setupHandlers()
+    console.error('📌 [MCPProxy] Handlers setup complete')
   }
 
   private setupHandlers() {
+    console.error('📌 [MCPProxy] Setting up handlers...')
+    
     // Handle tool listing
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+      console.error('📡 [MCPProxy] ListTools request received')
       const tools: Tool[] = []
 
       // Add methods as separate tools to match the MCP format
@@ -143,22 +151,27 @@ export class MCPProxy {
         })
       })
 
+      console.error('📡 [MCPProxy] ListTools returning', tools.length, 'tools')
       return { tools }
     })
 
     // Handle tool calling
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+      console.error('📡 [MCPProxy] CallTool request received for:', request.params?.name)
       const { name, arguments: params } = request.params
 
       // Find the operation in OpenAPI spec
       const operation = this.findOperation(name)
       if (!operation) {
+        console.error('❌ [MCPProxy] Operation not found:', name)
         throw new Error(`Method ${name} not found`)
       }
+      console.error('📌 [MCPProxy] Operation found:', operation.method, operation.path)
 
       // Deserialize any stringified JSON parameters (fixes double-serialization bug)
       // See: https://github.com/makenotion/notion-mcp-server/issues/176
       const deserializedParams = params ? deserializeParams(params as Record<string, unknown>) : {}
+      console.error('📌 [MCPProxy] Deserialized params:', Object.keys(deserializedParams))
 
       try {
         // Execute the operation
@@ -263,8 +276,11 @@ export class MCPProxy {
   }
 
   async connect(transport: Transport) {
+    console.error('📌 [MCPProxy] connect() called')
+    console.error('📌 [MCPProxy] Transport type:', transport.constructor.name)
     // The SDK will handle stdio communication
     await this.server.connect(transport)
+    console.error('📌 [MCPProxy] Server connected to transport successfully')
   }
 
   getServer() {
